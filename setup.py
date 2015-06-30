@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 name = 'sedate'
 description = (
-    'Date/time helper functions uused by various Seantis packages.'
+    'Date/time helper functions used by various Seantis packages.'
 )
 version = '0.0.1'
 

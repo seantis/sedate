@@ -1,7 +1,7 @@
 Sedate
 ======
 
-Date/time helper functions uused by various Seantis packages.
+Date/time helper functions used by various Seantis packages.
 
 There are projects like `Arrow <https://github.com/crsmithdev/arrow>`_ or
 `Delorean <https://github.com/crsmithdev/arrow>`_ which provide ways to work
