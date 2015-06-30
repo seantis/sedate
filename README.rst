@@ -7,7 +7,7 @@ There are projects like `Arrow <https://github.com/crsmithdev/arrow>`_ or
 `Delorean <https://github.com/crsmithdev/arrow>`_ which provide ways to work
 with timezones without having to think about it too much.
 
-Seantis doesn't use them because we *wants to reason about these things,
+Seantis doesn't use them because we *want* to reason about these things,
 to ensure they are correct, and partly because of self-loathing.
 
 Adding another layer makes this reasoning harder.
