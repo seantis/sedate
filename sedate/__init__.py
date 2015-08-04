@@ -175,7 +175,7 @@ def align_date_to_day(date, timezone, direction):
     if direction == 'up':
         local = local + timedelta(days=1, microseconds=-1)
 
-    return to_timezone(local, date.tzname())
+    return to_timezone(local, date.tzinfo)
 
 
 def align_range_to_day(start, end, timezone):
