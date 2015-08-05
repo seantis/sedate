@@ -4,6 +4,9 @@ Changelog
 Unreleased
 ~~~~~~~~~~
 
+- Adds a function to turn date-ish objects into datetimes.
+  [href]
+
 0.0.2 (2015-08-04)
 ~~~~~~~~~~~~~~~~~~~
 

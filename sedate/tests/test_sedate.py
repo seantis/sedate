@@ -2,7 +2,7 @@ import pytest
 import sedate
 import pytz
 
-from datetime import datetime
+from datetime import date, datetime
 
 
 def test_ensure_timezone():
@@ -20,6 +20,20 @@ def test_utcnow():
         == datetime.utcnow().replace(microsecond=0, second=0, minute=0)
 
     assert sedate.utcnow().tzinfo == pytz.timezone('UTC')
+
+
+def test_as_datetime():
+
+    class Dateish(object):
+        year = 2014
+        month = 8
+        day = 11
+
+    as_datetime = sedate.as_datetime
+
+    assert as_datetime(Dateish()) == datetime(2014, 8, 11)
+    assert as_datetime(date(2015, 1, 1)) == datetime(2015, 1, 1)
+    assert as_datetime(datetime(2015, 1, 1, 10)) == datetime(2015, 1, 1, 10)
 
 
 def test_standardize_naive_date():

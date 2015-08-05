@@ -36,6 +36,14 @@ def ensure_timezone(timezone):
     return timezone
 
 
+def as_datetime(value):
+    """ Turns a date-ish object into a datetime object. """
+    if isinstance(value, datetime):
+        return value
+
+    return datetime(value.year, value.month, value.day)
+
+
 def standardize_date(date, timezone):
     """ Takes the given date and converts it to UTC.
 
