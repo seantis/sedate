@@ -217,6 +217,60 @@ def test_align_date_to_day_down():
         already_aligned, 'Europe/Zurich', 'down')
 
 
+def test_align_date_to_day_summertime():
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_day(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-03-26T23:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_day(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-03-26T23:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_day(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-03-27T21:59:59.999999+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_day(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-03-27T21:59:59.999999+00:00'
+
+
+def test_align_date_to_day_wintertime():
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_day(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-10-29T22:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_day(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-10-29T22:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_day(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-10-30T22:59:59.999999+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_day(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-10-30T22:59:59.999999+00:00'
+
+
 def test_align_date_to_day_up():
     unaligned = sedate.standardize_date(datetime(2012, 1, 24, 10), 'UTC')
     aligned = sedate.align_date_to_day(unaligned, 'Europe/Zurich', 'up')

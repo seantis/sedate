@@ -4,6 +4,13 @@ Changelog
 Unreleased
 ~~~~~~~~~~
 
+- Fixes an issue with daylight savings time and ``align_date_to_day``.
+
+  With this change, ``align_date_to_day`` ensures that the resulting date is
+  in the timezone the date was aligned to, not in the timezone it originally
+  was in.
+  [href]
+
 0.0.3 (2015-08-05)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -156,7 +156,7 @@ def count_overlaps(dates, start, end):
     return count
 
 
-def align_date_to_day(date, timezone, direction):
+def align_date_to_day(date, timezone, direction, normalize=True):
     """ Aligns the given date to the beginning or end of the day, depending on
     the direction. The beginning of the day only makes sense with a timezone
     (as it is a local thing), so the given timezone is used.
@@ -178,12 +178,19 @@ def align_date_to_day(date, timezone, direction):
     if (local.hour, local.minute, local.second, local.microsecond) == aligned:
         return date
 
-    local = local.replace(hour=0, minute=0, second=0, microsecond=0)
+    adjusted = local.replace(hour=0, minute=0, second=0, microsecond=0)
 
     if direction == 'up':
-        local = local + timedelta(days=1, microseconds=-1)
+        adjusted = adjusted + timedelta(days=1, microseconds=-1)
 
-    return to_timezone(local, date.tzinfo)
+    # we want the date in the timezone it ends up in. Say we switch to
+    # summertime at 02:00 and we want a date set at 03:00 to be adjusted
+    # downwards. In this case we want the result to end up in the timezone
+    # before the change to summertime (since at 00:00 it was not yet in effect)
+    tz = ensure_timezone(timezone)
+    adjusted = replace_timezone(adjusted, tz.normalize(adjusted).tzinfo)
+
+    return to_timezone(adjusted, date.tzinfo)
 
 
 def align_range_to_day(start, end, timezone):
