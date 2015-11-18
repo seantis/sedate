@@ -6,7 +6,7 @@ name = 'sedate'
 description = (
     'Date/time helper functions used by various Seantis packages.'
 )
-version = '0.0.3'
+version = '0.0.4'
 
 
 def get_long_description():

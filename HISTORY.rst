@@ -4,6 +4,9 @@ Changelog
 Unreleased
 ~~~~~~~~~~
 
+0.0.4 (2015-11-18)
+~~~~~~~~~~~~~~~~~~~
+
 - Fixes an issue with daylight savings time and ``align_date_to_day``.
 
   With this change, ``align_date_to_day`` ensures that the resulting date is
