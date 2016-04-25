@@ -2,7 +2,7 @@ import pytest
 import sedate
 import pytz
 
-from datetime import date, datetime
+from datetime import date, datetime, time
 
 
 def test_ensure_timezone():
@@ -285,3 +285,12 @@ def test_align_date_to_day_up():
 
     assert already_aligned == sedate.align_date_to_day(
         already_aligned, 'Europe/Zurich', 'up')
+
+
+def test_parse_time():
+    assert sedate.parse_time('00:00') == time(0, 0)
+    assert sedate.parse_time('24:00') == time(0, 0)
+    assert sedate.parse_time('23:59') == time(23, 59)
+
+    with pytest.raises(ValueError):
+        sedate.parse_time('99:99')

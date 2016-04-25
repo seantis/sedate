@@ -16,7 +16,7 @@ it might very well make sense to use a datetime wrapper library.
 
 import pytz
 
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from sedate.compat import string_types
 
 mindatetime = pytz.utc.localize(datetime.min)
@@ -218,3 +218,16 @@ def get_date_range(day, start_time, end_time):
         end += timedelta(days=1)
 
     return start, end
+
+
+def parse_time(timestring):
+    """ Parses the given string in 'HH:MM' format and returns a time instance.
+
+    """
+
+    hour, minute = (int(p) for p in timestring.split(':'))
+
+    if hour == 24:
+        hour = 0
+
+    return time(hour, minute)
