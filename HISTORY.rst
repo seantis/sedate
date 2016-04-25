@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+0.0.5 (2016-04-25)
+~~~~~~~~~~~~~~~~~~~
+
 - Adds a time parsing function which accepts anything from 00:00 to 24:00.
   [href]
 
