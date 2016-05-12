@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+- Adds methods to align dates to months and weeks.
+  [href]
+
 0.0.5 (2016-04-25)
 ~~~~~~~~~~~~~~~~~~~
 

@@ -5,6 +5,9 @@ import pytz
 from datetime import date, datetime, time
 
 
+UTC = pytz.timezone('UTC')
+
+
 def test_ensure_timezone():
     assert sedate.ensure_timezone('Europe/Zurich') \
         == pytz.timezone('Europe/Zurich')
@@ -19,7 +22,7 @@ def test_utcnow():
         tzinfo=None, microsecond=0, second=0, minute=0) \
         == datetime.utcnow().replace(microsecond=0, second=0, minute=0)
 
-    assert sedate.utcnow().tzinfo == pytz.timezone('UTC')
+    assert sedate.utcnow().tzinfo == UTC
 
 
 def test_as_datetime():
@@ -294,3 +297,31 @@ def test_parse_time():
 
     with pytest.raises(ValueError):
         sedate.parse_time('99:99')
+
+
+def test_align_date_to_month():
+    date = datetime(2012, 2, 26, 15, tzinfo=UTC)
+
+    assert sedate.align_date_to_month(date, 'UTC', 'down')\
+        == datetime(2012, 2, 1, tzinfo=UTC)
+
+    assert sedate.align_date_to_month(date, 'UTC', 'up')\
+        == datetime(2012, 2, 29, 23, 59, 59, 999999, tzinfo=UTC)
+
+
+@pytest.mark.parametrize('date', [
+    datetime(2016, 3, 28, 15, tzinfo=UTC),
+    datetime(2016, 3, 29, 15, tzinfo=UTC),
+    datetime(2016, 3, 30, 15, tzinfo=UTC),
+    datetime(2016, 3, 31, 15, tzinfo=UTC),
+    datetime(2016, 4, 1, 15, tzinfo=UTC),
+    datetime(2016, 4, 2, 15, tzinfo=UTC),
+    datetime(2016, 4, 3, 15, tzinfo=UTC)
+])
+def test_align_date_to_week(date):
+
+    assert sedate.align_date_to_week(date, 'UTC', 'down')\
+        == datetime(2016, 3, 28, tzinfo=UTC)
+
+    assert sedate.align_date_to_week(date, 'UTC', 'up')\
+        == datetime(2016, 4, 3, 23, 59, 59, 999999, tzinfo=UTC)

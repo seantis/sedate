@@ -16,6 +16,7 @@ it might very well make sense to use a datetime wrapper library.
 
 import pytz
 
+from calendar import weekday, monthrange
 from datetime import datetime, time, timedelta
 from sedate.compat import string_types
 
@@ -156,7 +157,7 @@ def count_overlaps(dates, start, end):
     return count
 
 
-def align_date_to_day(date, timezone, direction, normalize=True):
+def align_date_to_day(date, timezone, direction):
     """ Aligns the given date to the beginning or end of the day, depending on
     the direction. The beginning of the day only makes sense with a timezone
     (as it is a local thing), so the given timezone is used.
@@ -203,6 +204,50 @@ def align_range_to_day(start, end, timezone):
     return (
         align_date_to_day(start, timezone, 'down'),
         align_date_to_day(end, timezone, 'up')
+    )
+
+
+def align_date_to_week(date, timezone, direction):
+    """ Like :func:`align_date_to_day`, but for weeks.
+
+    The first day of the week is monday.
+
+    """
+    date = align_date_to_day(date, timezone, direction)
+
+    if direction == 'down':
+        return date - timedelta(
+            days=weekday(date.year, date.month, date.day))
+    else:
+        return date + timedelta(
+            days=6 - weekday(date.year, date.month, date.day))
+
+
+def align_range_to_week(start, end, timezone):
+    assert start <= end, "{} - {} is an invalid range".format(start, end)
+
+    return (
+        align_date_to_week(start, timezone, 'down'),
+        align_date_to_week(end, timezone, 'up')
+    )
+
+
+def align_date_to_month(date, timezone, direction):
+    """ Like :func:`align_date_to_day`, but for months. """
+    date = align_date_to_day(date, timezone, direction)
+
+    if direction == 'down':
+        return date.replace(day=1)
+    else:
+        return date.replace(day=monthrange(date.year, date.month)[1])
+
+
+def align_range_to_month(start, end, timezone):
+    assert start <= end, "{} - {} is an invalid range".format(start, end)
+
+    return (
+        align_date_to_month(start, timezone, 'down'),
+        align_date_to_month(end, timezone, 'up')
     )
 
 
