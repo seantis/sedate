@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+0.2.0 (2017-03-02)
+~~~~~~~~~~~~~~~~~~~
+
 - Adds the ability to iterate over custom deltas between a start and an end.
   [href]
 
