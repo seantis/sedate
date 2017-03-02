@@ -2,7 +2,7 @@ import pytest
 import sedate
 import pytz
 
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 
 
 UTC = pytz.timezone('UTC')
@@ -325,3 +325,75 @@ def test_align_date_to_week(date):
 
     assert sedate.align_date_to_week(date, 'UTC', 'up')\
         == datetime(2016, 4, 3, 23, 59, 59, 999999, tzinfo=UTC)
+
+
+def test_dtrange():
+
+    def dtrange(*args):
+        return tuple(sedate.dtrange(*args))
+
+    assert dtrange(datetime(2017, 1, 1), datetime(2017, 1, 1)) == (
+        datetime(2017, 1, 1),
+    )
+
+    assert dtrange(datetime(2017, 1, 1), datetime(2017, 1, 2)) == (
+        datetime(2017, 1, 1),
+        datetime(2017, 1, 2),
+    )
+
+    assert dtrange(date(2017, 1, 1), date(2017, 1, 2)) == (
+        date(2017, 1, 1),
+        date(2017, 1, 2),
+    )
+
+    assert dtrange(
+        datetime(2017, 1, 1, 10), datetime(2017, 1, 1, 12), timedelta(hours=1)
+    ) == (
+        datetime(2017, 1, 1, 10),
+        datetime(2017, 1, 1, 11),
+        datetime(2017, 1, 1, 12),
+    )
+
+    assert dtrange(date(2017, 1, 5), date(2017, 1, 1)) == (
+        date(2017, 1, 5),
+        date(2017, 1, 4),
+        date(2017, 1, 3),
+        date(2017, 1, 2),
+        date(2017, 1, 1),
+    )
+
+    assert dtrange(date(2017, 1, 5), date(2017, 1, 1), timedelta(days=2)) == (
+        date(2017, 1, 5),
+        date(2017, 1, 3),
+        date(2017, 1, 1),
+    )
+
+    assert dtrange(date(2017, 1, 5), date(2017, 1, 1), timedelta(days=-2)) == (
+        date(2017, 1, 5),
+        date(2017, 1, 3),
+        date(2017, 1, 1),
+    )
+
+
+def test_weekrange():
+
+    def weekrange(*args):
+        return tuple(sedate.weekrange(*args))
+
+    assert weekrange(date(2017, 1, 1), date(2017, 1, 8)) == (
+        (date(2017, 1, 1), date(2017, 1, 1)),
+        (date(2017, 1, 2), date(2017, 1, 8))
+    )
+
+    assert weekrange(date(2017, 1, 2), date(2017, 1, 8)) == (
+        (date(2017, 1, 2), date(2017, 1, 8)),
+    )
+
+    assert weekrange(date(2017, 1, 5), date(2017, 1, 12)) == (
+        (date(2017, 1, 5), date(2017, 1, 8)),
+        (date(2017, 1, 9), date(2017, 1, 12)),
+    )
+
+    assert weekrange(date(2017, 1, 1), date(2017, 1, 1)) == (
+        (date(2017, 1, 1), date(2017, 1, 1)),
+    )

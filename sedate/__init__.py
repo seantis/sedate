@@ -14,6 +14,7 @@ it might very well make sense to use a datetime wrapper library.
 
 """
 
+import operator
 import pytz
 
 from calendar import weekday, monthrange
@@ -276,3 +277,58 @@ def parse_time(timestring):
         hour = 0
 
     return time(hour, minute)
+
+
+def dtrange(start, end, step=timedelta(days=1)):
+    """ Yields dates between start and end (inclusive) using the given step
+    size. The step size may be negative iff end < start.
+
+    The type of start/end is kept (datetime => datetime, date => date).
+
+    """
+
+    if start <= end:
+        remaining = operator.le
+    else:
+        remaining = operator.ge
+
+        if step.total_seconds() > 0:
+            step = timedelta(seconds=step.total_seconds() * -1)
+
+    while remaining(start, end):
+        yield start
+
+        # dates are immutable, so no copy is needed
+        start += step
+
+
+def weekrange(start, end):
+    """ Yields the weeks between start and end (inclusive).
+
+    If start and end span less than a week, a single start/end pair is the
+    result.
+
+    if start and end span multiple weeks a start/end pair for each week is
+    returned (start being monday, end being sunday).
+
+    Like :func:`dtrange` this function works with both datetime and date.
+    Unlike :func:`dtrange` this function does not work backwards (start > end).
+
+    """
+    assert start <= end
+
+    def weeknumber(day):
+        return int(day.strftime('%W'))
+
+    s = e = start
+    last_week = weeknumber(start)
+
+    for day in dtrange(start, end):
+        if last_week != weeknumber(day):
+            yield s, e
+            s = e = day
+            last_week = weeknumber(s)
+        else:
+            e = day
+
+    yield s, e
