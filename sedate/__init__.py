@@ -302,6 +302,11 @@ def dtrange(start, end, step=timedelta(days=1)):
         start += step
 
 
+def weeknumber(day):
+    """ The weeknumber of the given date/dateime as defined by ISO 8601. """
+    return int(day.strftime('%V'))
+
+
 def weekrange(start, end):
     """ Yields the weeks between start and end (inclusive).
 
@@ -316,9 +321,6 @@ def weekrange(start, end):
 
     """
     assert start <= end
-
-    def weeknumber(day):
-        return int(day.strftime('%W'))
 
     s = e = start
     last_week = weeknumber(start)
