@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+0.3.0 (2018-02-12)
+~~~~~~~~~~~~~~~~~~~
+
 - Adds a weeknumber function.
   [href]
 
