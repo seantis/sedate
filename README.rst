@@ -49,7 +49,7 @@ Coverage
 
 Latests PyPI Release
 --------------------
-.. image:: https://pypip.in/v/sedate/badge.png
+.. image:: https://img.shields.io/pypi/v/sedate.svg
   :target: https://crate.io/packages/sedate
   :alt: Latest PyPI Release
 
