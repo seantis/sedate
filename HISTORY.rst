@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+- Removes explicit support for Python 3.3 (might or might not work).
+  [href]
+
 0.3.0 (2018-02-12)
 ~~~~~~~~~~~~~~~~~~~
 
