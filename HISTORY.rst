@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+- Fixes DST related issues in ``get_date_range``, ``dtrange`` and ``weekrange``
+
+  With this change these functions now accept additional arguments
+  that determine what happens with ambiguous, non-existent times
+  during daylight savings transitions.
+  [Daverball]
+
 - Adds type annotations
   [Daverball]
 

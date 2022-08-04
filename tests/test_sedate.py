@@ -6,6 +6,7 @@ from datetime import date, datetime, time, timedelta
 
 
 UTC = pytz.timezone('UTC')
+CETCEST = pytz.timezone('Europe/Zurich')
 
 
 def test_ensure_timezone():
@@ -39,6 +40,24 @@ def test_as_datetime():
     assert as_datetime(datetime(2015, 1, 1, 10)) == datetime(2015, 1, 1, 10)
 
 
+def test_replace_timezone_amibiguous():
+    with pytest.raises(pytz.AmbiguousTimeError):
+        sedate.replace_timezone(
+            datetime(2022, 10, 30, 2),
+            'Europe/Zurich',
+            raise_ambiguous=True
+        )
+
+
+def test_replace_timezone_non_existent():
+    with pytest.raises(pytz.NonExistentTimeError):
+        sedate.replace_timezone(
+            datetime(2022, 3, 27, 2),
+            'Europe/Zurich',
+            raise_non_existent=True
+        )
+
+
 def test_standardize_naive_date():
     naive_date = datetime(2014, 10, 1, 13, 30)
     normalized = sedate.standardize_date(naive_date, 'Europe/Zurich')
@@ -55,6 +74,16 @@ def test_standardize_aware_date():
 
     assert normalized.tzname() == 'UTC'
     assert normalized.replace(tzinfo=None) == datetime(2014, 10, 1, 11, 30)
+
+
+def test_standardize_missing_timezone():
+    naive_date = datetime(2014, 10, 1, 13, 30)
+
+    with pytest.raises(ValueError, match=r'may \*not\* be empty'):
+        sedate.standardize_date(naive_date, None)
+
+    with pytest.raises(ValueError, match=r'may \*not\* be empty'):
+        sedate.standardize_date(naive_date, '')
 
 
 def test_is_whole_day():
@@ -97,6 +126,17 @@ def test_is_whole_day():
     )
 
 
+def test_is_whole_day_end_before_start():
+    with pytest.raises(ValueError, match=r'end needs to be equal'):
+        sedate.is_whole_day(
+            sedate.replace_timezone(
+                datetime(2015, 6, 30, 23, 59, 59), 'Europe/Zurich'),
+            sedate.replace_timezone(
+                datetime(2015, 6, 30), 'Europe/Zurich'),
+            'Europe/Zurich'
+        )
+
+
 def test_count_overlaps():
     assert sedate.count_overlaps([
         (datetime(2015, 1, 1, 10, 0), datetime(2015, 1, 1, 11, 0)),
@@ -122,12 +162,72 @@ def test_align_range_to_day():
 def test_get_date_range():
     assert sedate.get_date_range(
         sedate.replace_timezone(datetime(2015, 1, 1), 'Europe/Zurich'),
-        datetime(2015, 1, 1, 12, 0).time(),
-        datetime(2015, 1, 2, 11, 0).time(),
+        time(12, 0),
+        time(11, 0),
     ) == (
-        sedate.replace_timezone(datetime(2015, 1, 1, 12, 0), 'Europe/Zurich'),
-        sedate.replace_timezone(datetime(2015, 1, 2, 11, 0), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2015, 1, 1, 12), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2015, 1, 2, 11), 'Europe/Zurich'),
     )
+    assert sedate.get_date_range(
+        sedate.replace_timezone(datetime(2015, 1, 1), 'Europe/Zurich'),
+        time(12, 30),
+        time(14, 0),
+    ) == (
+        sedate.replace_timezone(datetime(2015, 1, 1, 12, 30), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2015, 1, 1, 14, 0), 'Europe/Zurich'),
+    )
+
+
+def test_get_date_range_dst_to_st_transition():
+    assert sedate.get_date_range(
+        sedate.replace_timezone(datetime(2022, 10, 30), 'Europe/Zurich'),
+        time(2, 0),
+        time(3, 0),
+    ) == (
+        sedate.replace_timezone(datetime(2022, 10, 30, 2), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 10, 30, 3), 'Europe/Zurich'),
+    )
+    assert sedate.get_date_range(
+        sedate.replace_timezone(datetime(2022, 10, 29), 'Europe/Zurich'),
+        time(12, 0),
+        time(11, 0),
+    ) == (
+        sedate.replace_timezone(datetime(2022, 10, 29, 12), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 10, 30, 11), 'Europe/Zurich'),
+    )
+    with pytest.raises(pytz.AmbiguousTimeError):
+        sedate.get_date_range(
+            sedate.replace_timezone(datetime(2022, 10, 30), 'Europe/Zurich'),
+            time(2, 0),
+            time(3, 0),
+            raise_ambiguous=True
+        )
+
+
+def test_get_date_range_st_to_dst_transition():
+    assert sedate.get_date_range(
+        sedate.replace_timezone(datetime(2022, 3, 27), 'Europe/Zurich'),
+        time(1, 0),
+        time(2, 0),
+    ) == (
+        sedate.replace_timezone(datetime(2022, 3, 27, 1), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 27, 2), 'Europe/Zurich'),
+    )
+    assert sedate.get_date_range(
+        sedate.replace_timezone(datetime(2022, 3, 26), 'Europe/Zurich'),
+        time(12, 0),
+        time(11, 0),
+    ) == (
+        sedate.replace_timezone(datetime(2022, 3, 26, 12), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 27, 11), 'Europe/Zurich'),
+    )
+    with pytest.raises(pytz.NonExistentTimeError):
+        sedate.get_date_range(
+            sedate.replace_timezone(datetime(2022, 3, 27), 'Europe/Zurich'),
+            time(1, 0),
+            time(2, 0),
+            raise_non_existent=True
+        )
 
 
 def test_is_whole_day_summertime():
@@ -299,16 +399,6 @@ def test_parse_time():
         sedate.parse_time('99:99')
 
 
-def test_align_date_to_month():
-    date = datetime(2012, 2, 26, 15, tzinfo=UTC)
-
-    assert sedate.align_date_to_month(date, 'UTC', 'down')\
-        == datetime(2012, 2, 1, tzinfo=UTC)
-
-    assert sedate.align_date_to_month(date, 'UTC', 'up')\
-        == datetime(2012, 2, 29, 23, 59, 59, 999999, tzinfo=UTC)
-
-
 @pytest.mark.parametrize('date', [
     datetime(2016, 3, 28, 15, tzinfo=UTC),
     datetime(2016, 3, 29, 15, tzinfo=UTC),
@@ -325,6 +415,83 @@ def test_align_date_to_week(date):
 
     assert sedate.align_date_to_week(date, 'UTC', 'up')\
         == datetime(2016, 4, 3, 23, 59, 59, 999999, tzinfo=UTC)
+
+
+def test_align_range_to_week():
+    full_week = (
+        datetime(2016, 3, 28, tzinfo=UTC),
+        datetime(2016, 4, 3, 23, 59, 59, 999999, tzinfo=UTC)
+    )
+    assert sedate.align_range_to_week(
+        datetime(2016, 3, 28, 15, tzinfo=UTC),
+        datetime(2016, 4, 3, 15, tzinfo=UTC),
+        timezone='UTC'
+    ) == full_week
+    assert sedate.align_range_to_week(
+        datetime(2016, 3, 30, 15, tzinfo=UTC),
+        datetime(2016, 3, 30, 15, tzinfo=UTC),
+        timezone='UTC'
+    ) == full_week
+
+
+def test_align_range_to_week_invalid_range():
+    with pytest.raises(ValueError, match=r'invalid range'):
+        sedate.align_range_to_week(
+            datetime(2016, 3, 30, 16, tzinfo=UTC),
+            datetime(2016, 3, 30, 15, tzinfo=UTC),
+            timezone='UTC'
+        )
+    with pytest.raises(ValueError, match=r'invalid range'):
+        sedate.align_range_to_week(
+            datetime(2016, 4, 3, 15, tzinfo=UTC),
+            datetime(2016, 3, 30, 15, tzinfo=UTC),
+            timezone='UTC'
+        )
+
+
+@pytest.mark.parametrize('date', [
+    datetime(2012, 2, day, 15, tzinfo=UTC)
+    for day in range(1, 30)
+])
+def test_align_date_to_month(date):
+
+    assert sedate.align_date_to_month(date, 'UTC', 'down')\
+        == datetime(2012, 2, 1, tzinfo=UTC)
+
+    assert sedate.align_date_to_month(date, 'UTC', 'up')\
+        == datetime(2012, 2, 29, 23, 59, 59, 999999, tzinfo=UTC)
+
+
+def test_align_range_to_month():
+    full_month = (
+        datetime(2012, 2, 1, tzinfo=UTC),
+        datetime(2012, 2, 29, 23, 59, 59, 999999, tzinfo=UTC)
+    )
+    assert sedate.align_range_to_month(
+        datetime(2012, 2, 1, 15, tzinfo=UTC),
+        datetime(2012, 2, 29, 15, tzinfo=UTC),
+        timezone='UTC'
+    ) == full_month
+    assert sedate.align_range_to_month(
+        datetime(2012, 2, 15, 15, tzinfo=UTC),
+        datetime(2012, 2, 15, 15, tzinfo=UTC),
+        timezone='UTC'
+    ) == full_month
+
+
+def test_align_range_to_month_invalid_range():
+    with pytest.raises(ValueError, match=r'invalid range'):
+        sedate.align_range_to_month(
+            datetime(2012, 2, 15, 16, tzinfo=UTC),
+            datetime(2012, 2, 15, 15, tzinfo=UTC),
+            timezone='UTC'
+        )
+    with pytest.raises(ValueError, match=r'invalid range'):
+        sedate.align_range_to_month(
+            datetime(2012, 2, 29, 15, tzinfo=UTC),
+            datetime(2012, 2, 1, 15, tzinfo=UTC),
+            timezone='UTC'
+        )
 
 
 def test_dtrange():
@@ -375,6 +542,66 @@ def test_dtrange():
     )
 
 
+def test_dtrange_tz_aware_dst_to_st():
+
+    def dtrange(*args):
+        return tuple(sedate.dtrange(*args))
+
+    assert dtrange(
+        sedate.replace_timezone(datetime(2022, 10, 30), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 10, 31), 'Europe/Zurich')
+    ) == (
+        sedate.replace_timezone(datetime(2022, 10, 30), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 10, 31), 'Europe/Zurich')
+    )
+
+    assert dtrange(
+        sedate.replace_timezone(datetime(2022, 10, 30, 2), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 10, 30, 4), 'Europe/Zurich'),
+        timedelta(hours=1)
+    ) == (
+        sedate.replace_timezone(datetime(2022, 10, 30, 2), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 10, 30, 3), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 10, 30, 4), 'Europe/Zurich'),
+    )
+
+
+def test_dtrange_tz_aware_st_to_dst():
+
+    def dtrange(*args, skip_missing=False):
+        return tuple(sedate.dtrange(*args, skip_missing=skip_missing))
+
+    assert dtrange(
+        sedate.replace_timezone(datetime(2022, 3, 27), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 28), 'Europe/Zurich')
+    ) == (
+        sedate.replace_timezone(datetime(2022, 3, 27), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 28), 'Europe/Zurich')
+    )
+
+    assert dtrange(
+        sedate.replace_timezone(datetime(2022, 3, 27, 1), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 27, 3), 'Europe/Zurich'),
+        timedelta(hours=1)
+    ) == (
+        # 2:00 and 3:00 are the same time on this day since 2:00-2:59 will
+        # be returned in ST, while 3:00 onwards will be returned in DST
+        sedate.replace_timezone(datetime(2022, 3, 27, 1), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 27, 2), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 27, 3), 'Europe/Zurich'),
+    )
+
+    assert dtrange(
+        sedate.replace_timezone(datetime(2022, 3, 27, 1), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 27, 3), 'Europe/Zurich'),
+        timedelta(hours=1),
+        skip_missing=True
+    ) == (
+        sedate.replace_timezone(datetime(2022, 3, 27, 1), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 27, 3), 'Europe/Zurich'),
+    )
+
+
 def test_weekrange():
 
     def weekrange(*args):
@@ -389,11 +616,55 @@ def test_weekrange():
         (date(2017, 1, 2), date(2017, 1, 8)),
     )
 
-    assert weekrange(date(2017, 1, 5), date(2017, 1, 12)) == (
-        (date(2017, 1, 5), date(2017, 1, 8)),
-        (date(2017, 1, 9), date(2017, 1, 12)),
+    assert weekrange(datetime(2017, 1, 1), datetime(2017, 1, 1)) == (
+        (datetime(2017, 1, 1), datetime(2017, 1, 1)),
     )
 
-    assert weekrange(date(2017, 1, 1), date(2017, 1, 1)) == (
-        (date(2017, 1, 1), date(2017, 1, 1)),
+    assert weekrange(datetime(2017, 1, 12), datetime(2017, 1, 5)) == (
+        (datetime(2017, 1, 12), datetime(2017, 1, 9)),
+        (datetime(2017, 1, 8), datetime(2017, 1, 5)),
+    )
+
+
+@pytest.mark.parametrize('interval', [
+    (date(2017, 1, 1), date(2017, 1, 8)),
+])
+def test_weekrange_backward(interval):
+    forward = tuple(sedate.weekrange(*interval))
+    backward = tuple(sedate.weekrange(*reversed(interval)))
+
+    # reversing should not change the number of results
+    assert len(forward) == len(backward)
+
+    # all the intervals should come in in opposite order
+    # and each interval should be reversed
+    for f, b in zip(forward, reversed(backward)):
+        assert f == tuple(reversed(b))
+
+
+def test_weekrange_tz_aware_dst_to_st():
+
+    def weekrange(*args):
+        return tuple(sedate.weekrange(*args))
+
+    def tz_aware_range(start, end):
+        return (
+            sedate.replace_timezone(start, 'Europe/Zurich'),
+            sedate.replace_timezone(end, 'Europe/Zurich')
+        )
+
+    assert weekrange(
+        sedate.replace_timezone(datetime(2022, 3, 22), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 28), 'Europe/Zurich')
+    ) == (
+        tz_aware_range(datetime(2022, 3, 22), datetime(2022, 3, 27)),
+        tz_aware_range(datetime(2022, 3, 28), datetime(2022, 3, 28)),
+    )
+
+    assert weekrange(
+        sedate.replace_timezone(datetime(2022, 3, 22, 3), 'Europe/Zurich'),
+        sedate.replace_timezone(datetime(2022, 3, 28, 3), 'Europe/Zurich')
+    ) == (
+        tz_aware_range(datetime(2022, 3, 22, 3), datetime(2022, 3, 27, 3)),
+        tz_aware_range(datetime(2022, 3, 28, 3), datetime(2022, 3, 28, 3)),
     )
