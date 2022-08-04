@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.bandit]
+skips = ["B101"]
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+testpaths = ["tests"]
+norecursedirs = [
+    "*.egg",
+    ".git",
+    ".*",
+    "_*"
+]
+
+[tool.coverage.run]
+branch = true
+omit = ["*/types.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "@overload",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+    "raise NotImplementedError"
+]
+
+[tool.mypy]
+python_version = 3.8
+follow_imports = "silent"
+warn_redundant_casts = true
+warn_unreachable = true
+warn_unused_ignores = true
+disallow_any_generics = true
+disallow_untyped_defs = true
+mypy_path = "$MYPY_CONFIG_FILE_DIR"
+
+[[tool.mypy.overrides]]
+module = []
+ignore_missing_imports = true
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+isolated_build = True
+envlist = py37,py38,py39,py310,lint,bandit,mypy
+
+[gh-actions]
+python =
+    3.7: py37
+    3.8: py38,flake8,bandit,mypy
+    3.9: py39
+    3.10: py310
+
+[testenv]
+setenv =
+    py{37,38,39,310}: COVERAGE_FILE = .coverage.{envname}
+deps =
+    coverage[toml]
+    pytest
+    pytest-cov
+    pytest-codecov[git]
+commands = py.test --cov={envsitepackagesdir}/sedate --cov-report= {posargs}
+
+[testenv:lint]
+basepython = python3.8
+deps =
+    flake8
+commands = flake8 sedate/ tests/
+
+[testenv:mypy]
+basepython = python3.8
+deps =
+    mypy
+    types-pytz
+commands = mypy -p sedate
+
+[testenv:bandit]
+basepython = python3.8
+deps =
+    bandit[toml]
+commands = bandit -q -c pyproject.toml -r sedate/
+
+[testenv:report]
+deps =
+    coverage[toml]
+skip_install = true
+commands =
+    coverage combine
+    coverage report -m
+"""

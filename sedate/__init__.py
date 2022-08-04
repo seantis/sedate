@@ -19,7 +19,23 @@ import pytz
 
 from calendar import weekday, monthrange
 from datetime import datetime, time, timedelta
-from sedate.compat import string_types
+
+
+from typing import overload
+from typing import Iterable
+from typing import Iterator
+from typing import Tuple
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from datetime import date as Date
+
+    from .types import DateLike
+    from .types import DateOrDatetime
+    from .types import Direction
+    from .types import TDateOrDatetime
+    from .types import TzInfoOrName
+
+__version__ = '0.3.0'
 
 mindatetime = pytz.utc.localize(datetime.min)
 maxdatetime = pytz.utc.localize(datetime.max)
@@ -29,16 +45,16 @@ class NotTimezoneAware(Exception):
     pass
 
 
-def ensure_timezone(timezone):
+def ensure_timezone(timezone: 'TzInfoOrName') -> pytz.BaseTzInfo:
     """ Make sure the given timezone is a pytz timezone, not just a string. """
 
-    if isinstance(timezone, string_types):
+    if isinstance(timezone, str):
         return pytz.timezone(timezone)
 
     return timezone
 
 
-def as_datetime(value):
+def as_datetime(value: 'DateLike') -> datetime:
     """ Turns a date-ish object into a datetime object. """
     if isinstance(value, datetime):
         return value
@@ -46,7 +62,7 @@ def as_datetime(value):
     return datetime(value.year, value.month, value.day)
 
 
-def standardize_date(date, timezone):
+def standardize_date(date: datetime, timezone: 'TzInfoOrName') -> datetime:
     """ Takes the given date and converts it to UTC.
 
     The given timezone is set on timezone-naive dates and converted to
@@ -56,7 +72,8 @@ def standardize_date(date, timezone):
 
     """
 
-    assert timezone, "The timezone may *not* be empty!"
+    if not timezone:
+        raise ValueError('The timezone may *not* be empty!')
 
     if date.tzinfo is None:
         date = replace_timezone(date, timezone)
@@ -64,7 +81,7 @@ def standardize_date(date, timezone):
     return to_timezone(date, 'UTC')
 
 
-def replace_timezone(date, timezone):
+def replace_timezone(date: datetime, timezone: 'TzInfoOrName') -> datetime:
     """ Takes the given date and replaces the timezone with the given timezone.
 
     No conversion is done in this method, it's simply a safe way to do the
@@ -84,7 +101,7 @@ def replace_timezone(date, timezone):
     return timezone.normalize(timezone.localize(date.replace(tzinfo=None)))
 
 
-def to_timezone(date, timezone):
+def to_timezone(date: datetime, timezone: 'TzInfoOrName') -> datetime:
     """ Takes the given date and converts it to the given timezone.
 
     The given date must already be timezone aware for this to work.
@@ -98,12 +115,16 @@ def to_timezone(date, timezone):
     return timezone.normalize(date.astimezone(timezone))
 
 
-def utcnow():
+def utcnow() -> datetime:
     """ Returns a timezone-aware datetime.utcnow(). """
     return replace_timezone(datetime.utcnow(), 'UTC')
 
 
-def is_whole_day(start, end, timezone):
+def is_whole_day(
+    start: datetime,
+    end: datetime,
+    timezone: 'TzInfoOrName'
+) -> bool:
     """Returns true if the given start, end range should be considered
     a whole-day range. This is so if the start time is 0:00:00 and the end
     time either 0:59:59 or 0:00:00 and if there is at least a diff
@@ -119,7 +140,8 @@ def is_whole_day(start, end, timezone):
     start = to_timezone(start, timezone).replace(tzinfo=None)
     end = to_timezone(end, timezone).replace(tzinfo=None)
 
-    assert start <= end, "The end needs to be equal or greater than the start"
+    if start > end:
+        raise ValueError('The end needs to be equal or greater than the start')
 
     if (start.hour, start.minute, start.second) != (0, 0, 0):
         return False
@@ -133,7 +155,20 @@ def is_whole_day(start, end, timezone):
     return True
 
 
-def overlaps(start, end, otherstart, otherend):
+@overload
+def overlaps(start: datetime, end: datetime,
+             otherstart: datetime, otherend: datetime) -> bool: ...
+@overload  # noqa: E302
+def overlaps(start: 'Date', end: 'Date',
+             otherstart: 'Date', otherend: 'Date') -> bool: ...
+
+
+def overlaps(
+    start: 'DateOrDatetime',
+    end: 'DateOrDatetime',
+    otherstart: 'DateOrDatetime',
+    otherend: 'DateOrDatetime'
+) -> bool:
     """ Returns True if the given dates overlap in any way. """
 
     if otherstart <= start and start <= otherend:
@@ -145,7 +180,19 @@ def overlaps(start, end, otherstart, otherend):
     return False
 
 
-def count_overlaps(dates, start, end):
+@overload
+def count_overlaps(dates: Iterable[Tuple[datetime, datetime]],
+                   start: datetime, end: datetime) -> int: ...
+@overload  # noqa: E302
+def count_overlaps(dates: Iterable[Tuple['Date', 'Date']],
+                   start: 'Date', end: 'Date') -> int: ...
+
+
+def count_overlaps(
+    dates: Iterable[Tuple['DateOrDatetime', 'DateOrDatetime']],
+    start: 'DateOrDatetime',
+    end: 'DateOrDatetime'
+) -> int:
     """ Goes through the list of start/end tuples in 'dates' and returns the
     number of times start/end overlaps with any of the dates.
 
@@ -158,7 +205,11 @@ def count_overlaps(dates, start, end):
     return count
 
 
-def align_date_to_day(date, timezone, direction):
+def align_date_to_day(
+    date: datetime,
+    timezone: 'TzInfoOrName',
+    direction: 'Direction'
+) -> datetime:
     """ Aligns the given date to the beginning or end of the day, depending on
     the direction. The beginning of the day only makes sense with a timezone
     (as it is a local thing), so the given timezone is used.
@@ -190,12 +241,19 @@ def align_date_to_day(date, timezone, direction):
     # downwards. In this case we want the result to end up in the timezone
     # before the change to summertime (since at 00:00 it was not yet in effect)
     tz = ensure_timezone(timezone)
-    adjusted = replace_timezone(adjusted, tz.normalize(adjusted).tzinfo)
+    normalized = tz.normalize(adjusted)
+    assert isinstance(normalized.tzinfo, pytz.BaseTzInfo)
+    adjusted = replace_timezone(adjusted, normalized.tzinfo)
 
+    # FIXME: Allow other tzinfo implementations?
+    assert isinstance(date.tzinfo, pytz.BaseTzInfo)
     return to_timezone(adjusted, date.tzinfo)
 
 
-def align_range_to_day(start, end, timezone):
+def align_range_to_day(
+    start: datetime,
+    end: datetime, timezone: 'TzInfoOrName'
+) -> Tuple[datetime, datetime]:
     """ Takes the given start and end date and aligns it to the day depending
     on the given timezone.
 
@@ -208,7 +266,11 @@ def align_range_to_day(start, end, timezone):
     )
 
 
-def align_date_to_week(date, timezone, direction):
+def align_date_to_week(
+    date: datetime,
+    timezone: 'TzInfoOrName',
+    direction: 'Direction'
+) -> datetime:
     """ Like :func:`align_date_to_day`, but for weeks.
 
     The first day of the week is monday.
@@ -224,8 +286,14 @@ def align_date_to_week(date, timezone, direction):
             days=6 - weekday(date.year, date.month, date.day))
 
 
-def align_range_to_week(start, end, timezone):
-    assert start <= end, "{} - {} is an invalid range".format(start, end)
+def align_range_to_week(
+    start: datetime,
+    end: datetime,
+    timezone: 'TzInfoOrName'
+) -> Tuple[datetime, datetime]:
+
+    if start > end:
+        raise ValueError(f'{start} - {end} is an invalid range')
 
     return (
         align_date_to_week(start, timezone, 'down'),
@@ -233,7 +301,11 @@ def align_range_to_week(start, end, timezone):
     )
 
 
-def align_date_to_month(date, timezone, direction):
+def align_date_to_month(
+    date: datetime,
+    timezone: 'TzInfoOrName',
+    direction: 'Direction'
+) -> datetime:
     """ Like :func:`align_date_to_day`, but for months. """
     date = align_date_to_day(date, timezone, direction)
 
@@ -243,8 +315,14 @@ def align_date_to_month(date, timezone, direction):
         return date.replace(day=monthrange(date.year, date.month)[1])
 
 
-def align_range_to_month(start, end, timezone):
-    assert start <= end, "{} - {} is an invalid range".format(start, end)
+def align_range_to_month(
+    start: datetime,
+    end: datetime,
+    timezone: 'TzInfoOrName'
+) -> Tuple[datetime, datetime]:
+
+    if start > end:
+        raise ValueError(f'{start} - {end} is an invalid range')
 
     return (
         align_date_to_month(start, timezone, 'down'),
@@ -252,7 +330,11 @@ def align_range_to_month(start, end, timezone):
     )
 
 
-def get_date_range(day, start_time, end_time):
+def get_date_range(
+    day: datetime,
+    start_time: time,
+    end_time: time
+) -> Tuple[datetime, datetime]:
     """ Returns the date-range of a date a start and an end time. """
 
     start = datetime.combine(day.date(), start_time).replace(tzinfo=day.tzinfo)
@@ -266,7 +348,7 @@ def get_date_range(day, start_time, end_time):
     return start, end
 
 
-def parse_time(timestring):
+def parse_time(timestring: str) -> time:
     """ Parses the given string in 'HH:MM' format and returns a time instance.
 
     """
@@ -279,7 +361,11 @@ def parse_time(timestring):
     return time(hour, minute)
 
 
-def dtrange(start, end, step=timedelta(days=1)):
+def dtrange(
+    start: 'TDateOrDatetime',
+    end: 'TDateOrDatetime',
+    step: timedelta = timedelta(days=1)
+) -> Iterator['TDateOrDatetime']:
     """ Yields dates between start and end (inclusive) using the given step
     size. The step size may be negative iff end < start.
 
@@ -302,12 +388,16 @@ def dtrange(start, end, step=timedelta(days=1)):
         start += step
 
 
-def weeknumber(day):
+def weeknumber(day: 'DateOrDatetime') -> int:
     """ The weeknumber of the given date/dateime as defined by ISO 8601. """
+    # FIXME: This is super inefficient
     return int(day.strftime('%V'))
 
 
-def weekrange(start, end):
+def weekrange(
+    start: 'TDateOrDatetime',
+    end: 'TDateOrDatetime'
+) -> Iterator[Tuple['TDateOrDatetime', 'TDateOrDatetime']]:
     """ Yields the weeks between start and end (inclusive).
 
     If start and end span less than a week, a single start/end pair is the
@@ -320,11 +410,16 @@ def weekrange(start, end):
     Unlike :func:`dtrange` this function does not work backwards (start > end).
 
     """
-    assert start <= end
+
+    if start > end:
+        # TODO: We can probably make this work backwards as well...
+        raise ValueError(f'{start} - {end} is an invalid range')
 
     s = e = start
     last_week = weeknumber(start)
 
+    # FIXME: doing a step of 1 day is really dumb and makes us do
+    #        much more work than we need to
     for day in dtrange(start, end):
         if last_week != weeknumber(day):
             yield s, e

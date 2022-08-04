@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+- Adds type annotations
+  [Daverball]
+
+- Removes support for Python 2.7 and 3.6 and below
+  [Daverball]
+
 - Removes explicit support for Python 3.3 (might or might not work).
   [href]
 

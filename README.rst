@@ -1,6 +1,26 @@
 Sedate
 ======
 
+.. image:: https://img.shields.io/pypi/v/sedate.svg
+    :target: https://pypi.org/project/sedate
+    :alt: PyPI version
+
+.. image:: https://img.shields.io/pypi/pyversions/sedate.svg
+    :target: https://pypi.org/project/sedate
+    :alt: Python versions
+
+.. image:: https://github.com/seantis/sedate/actions/workflows/python-tox.yaml/badge.svg
+    :target: https://github.com/seantis/sedate/actions
+    :alt: Tests
+
+.. image:: https://codecov.io/gh/seantis/sedate/branch/master/graph/badge.svg?token=gMGL85OASa
+    :target: https://codecov.io/gh/seantis/sedate
+    :alt: Codecov.io
+
+.. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
+   :target: https://github.com/pre-commit/pre-commit
+   :alt: pre-commit
+
 Date/time helper functions used by various Seantis packages.
 
 There are projects like `Arrow <https://github.com/crsmithdev/arrow>`_ or
@@ -14,7 +34,7 @@ Adding another layer makes this reasoning harder.
 
 Run the Tests
 -------------
-    
+
 Install tox and run it::
 
     pip install tox
@@ -22,36 +42,27 @@ Install tox and run it::
 
 Limit the tests to a specific python version::
 
-    tox -e py27
+    tox -e py37
 
 Conventions
 -----------
 
 Sedate follows PEP8 as close as possible. To test for it run::
 
-    tox -e pep8
+    tox -e lint
 
 Sedate uses `Semantic Versioning <http://semver.org/>`_
 
-Build Status
-------------
 
-.. image:: https://travis-ci.org/seantis/sedate.png
-  :target: https://travis-ci.org/seantis/sedate
-  :alt: Build Status
+Development
+-----------
 
-Coverage
---------
+Setup your local development environment::
 
-.. image:: https://coveralls.io/repos/seantis/sedate/badge.png?branch=master
-  :target: https://coveralls.io/r/seantis/sedate?branch=master
-  :alt: Project Coverage
-
-Latests PyPI Release
---------------------
-.. image:: https://pypip.in/v/sedate/badge.png
-  :target: https://crate.io/packages/sedate
-  :alt: Latest PyPI Release
+    python3.8 -m venv venv
+    source venv/bin/activate
+    pip install .[dev]
+    pre-commit install
 
 License
 -------
