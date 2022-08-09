@@ -1,8 +1,13 @@
 Changelog
 ---------
 
+- Fixes GPLv2 License Classifier in `setup.cfg`
+
 1.0.0 (2022-08-09)
 ~~~~~~~~~~~~~~~~~~~
+
+- Fixes ``align_to_week`` and ``align_to_month`` not behaving consistently with ``align_to_day`` during DST transitions
+  [Daverball]
 
 - Fixes DST related issues in ``get_date_range``, ``dtrange`` and ``weekrange``
 
