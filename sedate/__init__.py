@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from .types import TzInfo
     from .types import TzInfoOrName
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 mindatetime = pytz.utc.localize(datetime.min)
 maxdatetime = pytz.utc.localize(datetime.max)
