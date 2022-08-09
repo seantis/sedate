@@ -263,7 +263,8 @@ def align_date_to_day(
 
     aligned = (0, 0, 0, 0) if direction == 'down' else (23, 59, 59, 999999)
 
-    local = to_timezone(date, timezone)
+    tzinfo = ensure_timezone(timezone)
+    local = to_timezone(date, tzinfo)
 
     if (local.hour, local.minute, local.second, local.microsecond) == aligned:
         return date
@@ -277,8 +278,7 @@ def align_date_to_day(
     # summertime at 02:00 and we want a date set at 03:00 to be adjusted
     # downwards. In this case we want the result to end up in the timezone
     # before the change to summertime (since at 00:00 it was not yet in effect)
-    tz = ensure_timezone(timezone)
-    normalized = tz.normalize(adjusted)
+    normalized = tzinfo.normalize(adjusted)
     assert isinstance(normalized.tzinfo, pytz.BaseTzInfo)
     adjusted = replace_timezone(adjusted, normalized.tzinfo)
 
@@ -314,12 +314,23 @@ def align_date_to_week(
     The first day of the week is monday.
 
     """
-    date = align_date_to_day(date, timezone, direction)
 
+    # we need the localized time to determine the weekday
+    # but we need to align to day at the end to avoid DST
+    # <-> ST transition issues the same we do in align_to_day
+    localized = to_timezone(date, timezone)
     if direction == 'down':
-        return date - timedelta(days=date.weekday())
+        return align_date_to_day(
+            date - timedelta(days=localized.weekday()),
+            timezone,
+            'down'
+        )
     else:
-        return date + timedelta(days=6 - date.weekday())
+        return align_date_to_day(
+            date + timedelta(days=6 - localized.weekday()),
+            timezone,
+            direction
+        )
 
 
 def align_range_to_week(
@@ -343,12 +354,33 @@ def align_date_to_month(
     direction: 'Direction'
 ) -> datetime:
     """ Like :func:`align_date_to_day`, but for months. """
+
+    # FIXME: This is really inefficient, but we're forced to do
+    #        this due to the weird/poor API design of decoupling
+    #        the timezone from the date, which may seem convenient
+    #        in some situations, but it also means we do a dozen
+    #        redundant conversions back and forth if we want to
+    #        implement functions in terms of one another
+    tzinfo = date.tzinfo
+    assert isinstance(tzinfo, pytz.BaseTzInfo)
+    localized = to_timezone(date, timezone)
     date = align_date_to_day(date, timezone, direction)
 
+    # we need to align to day at the end to handle DST <-> ST
+    # transitions properly
     if direction == 'down':
-        return date.replace(day=1)
+        return align_date_to_day(
+            to_timezone(localized.replace(day=1), tzinfo),
+            timezone,
+            'down'
+        )
     else:
-        return date.replace(day=monthrange(date.year, date.month)[1])
+        last_day = localized.replace(day=monthrange(date.year, date.month)[1])
+        return align_date_to_day(
+            to_timezone(last_day, tzinfo),
+            timezone,
+            direction
+        )
 
 
 def align_range_to_month(

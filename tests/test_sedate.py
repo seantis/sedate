@@ -449,6 +449,60 @@ def test_align_range_to_week_invalid_range():
         )
 
 
+def test_align_date_to_week_st_to_dst():
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_week(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-03-20T23:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_week(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-03-20T23:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_week(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-03-27T21:59:59.999999+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_week(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-03-27T21:59:59.999999+00:00'
+
+
+def test_align_date_to_week_dst_to_st():
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_week(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-10-23T22:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_week(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-10-23T22:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_week(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-10-30T22:59:59.999999+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_week(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-10-30T22:59:59.999999+00:00'
+
+
 @pytest.mark.parametrize('date', [
     datetime(2012, 2, day, 15, tzinfo=UTC)
     for day in range(1, 30)
@@ -460,6 +514,60 @@ def test_align_date_to_month(date):
 
     assert sedate.align_date_to_month(date, 'UTC', 'up')\
         == datetime(2012, 2, 29, 23, 59, 59, 999999, tzinfo=UTC)
+
+
+def test_align_date_to_month_st_to_dst():
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_month(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-02-29T23:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_month(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-02-29T23:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_month(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-03-31T21:59:59.999999+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 3, 27, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_month(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-03-31T21:59:59.999999+00:00'
+
+
+def test_align_date_to_month_dst_to_st():
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_month(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-09-30T22:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_month(unaligned, 'Europe/Zurich', 'down')
+
+    assert aligned.isoformat() == '2016-09-30T22:00:00+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 1), 'Europe/Zurich')
+    aligned = sedate.align_date_to_month(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-10-31T22:59:59.999999+00:00'
+
+    unaligned = sedate.standardize_date(
+        datetime(2016, 10, 30, 4), 'Europe/Zurich')
+    aligned = sedate.align_date_to_month(unaligned, 'Europe/Zurich', 'up')
+
+    assert aligned.isoformat() == '2016-10-31T22:59:59.999999+00:00'
 
 
 def test_align_range_to_month():
