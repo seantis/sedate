@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+1.0.0 (2022-08-09)
+~~~~~~~~~~~~~~~~~~~
+
 - Fixes DST related issues in ``get_date_range``, ``dtrange`` and ``weekrange``
 
   With this change these functions now accept additional arguments
