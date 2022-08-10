@@ -776,3 +776,8 @@ def test_weekrange_tz_aware_dst_to_st():
         tz_aware_range(datetime(2022, 3, 22, 3), datetime(2022, 3, 27, 3)),
         tz_aware_range(datetime(2022, 3, 28, 3), datetime(2022, 3, 28, 3)),
     )
+
+
+def test_weeknumber():
+    assert sedate.weeknumber(date(2022, 8, 10)) == 32
+    assert sedate.weeknumber(datetime(2022, 8, 10)) == 32

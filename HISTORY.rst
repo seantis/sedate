@@ -1,10 +1,14 @@
 Changelog
 ---------
 
+- Adds back removed ``weeknumber`` function
+  [Daverball]
+
 1.0.1 (2022-08-09)
 ~~~~~~~~~~~~~~~~~~~
 
 - Fixes GPLv2 License Classifier in `setup.cfg`
+  [Daverball]
 
 1.0.0 (2022-08-09)
 ~~~~~~~~~~~~~~~~~~~

@@ -585,6 +585,10 @@ def dtrange(
             pass
 
 
+def weeknumber(date: 'DateOrDatetime') -> int:
+    return date.isocalendar()[1]
+
+
 def weekrange(
     start: 'TDateOrDatetime',
     end: 'TDateOrDatetime'
