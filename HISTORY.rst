@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+1.0.3 (2023-03-30)
+~~~~~~~~~~~~~~~~~~~
+
+- Fixes up packaging of ``py.typed`` marker
+  [Daverball]
+
 1.0.2 (2022-08-10)
 ~~~~~~~~~~~~~~~~~~~
 
