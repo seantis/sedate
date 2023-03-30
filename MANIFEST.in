@@ -1,0 +1,5 @@
+include README.rst
+include HISTORY.rst
+include license/LICENSE.GPL
+include license/LICENSE.txt
+include sedate/py.typed
