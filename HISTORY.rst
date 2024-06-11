@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+1.1.0 (2024-06-11)
+~~~~~~~~~~~~~~~~~~~
+
+- Adds support for Python 3.11 and 3.12. Drops support for Python 3.7.
+  [Daverball]
+
 1.0.3 (2023-03-30)
 ~~~~~~~~~~~~~~~~~~~
 
