@@ -13,6 +13,7 @@ That being said, further up the stacks - in the web application for example -
 it might very well make sense to use a datetime wrapper library.
 
 """
+from __future__ import annotations
 
 import operator
 import pytz
@@ -22,17 +23,16 @@ from datetime import datetime, time, timedelta
 
 
 from typing import overload
-from typing import Iterable
-from typing import Iterator
-from typing import Tuple
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from datetime import date as Date
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from datetime import date as date_t
 
     from .types import DateLike
     from .types import DateOrDatetime
+    from .types import DateOrDatetimeT
     from .types import Direction
-    from .types import TDateOrDatetime
     from .types import TzInfo
     from .types import TzInfoOrName
 
@@ -46,7 +46,7 @@ class NotTimezoneAware(Exception):
     pass
 
 
-def ensure_timezone(timezone: 'TzInfoOrName') -> 'TzInfo':
+def ensure_timezone(timezone: TzInfoOrName) -> TzInfo:
     """ Make sure the given timezone is a pytz timezone, not just a string. """
 
     if isinstance(timezone, str):
@@ -58,7 +58,7 @@ def ensure_timezone(timezone: 'TzInfoOrName') -> 'TzInfo':
     return timezone  # type:ignore[return-value]
 
 
-def as_datetime(value: 'DateLike') -> datetime:
+def as_datetime(value: DateLike) -> datetime:
     """ Turns a date-ish object into a datetime object. """
     if isinstance(value, datetime):
         return value
@@ -66,7 +66,7 @@ def as_datetime(value: 'DateLike') -> datetime:
     return datetime(value.year, value.month, value.day)
 
 
-def standardize_date(date: datetime, timezone: 'TzInfoOrName') -> datetime:
+def standardize_date(date: datetime, timezone: TzInfoOrName) -> datetime:
     """ Takes the given date and converts it to UTC.
 
     The given timezone is set on timezone-naive dates and converted to
@@ -87,7 +87,7 @@ def standardize_date(date: datetime, timezone: 'TzInfoOrName') -> datetime:
 
 def replace_timezone(
     date: datetime,
-    timezone: 'TzInfoOrName',
+    timezone: TzInfoOrName,
     *,
     is_dst: bool = False,
     raise_non_existent: bool = False,
@@ -136,7 +136,7 @@ def replace_timezone(
     return timezone.normalize(localized)
 
 
-def to_timezone(date: datetime, timezone: 'TzInfoOrName') -> datetime:
+def to_timezone(date: datetime, timezone: TzInfoOrName) -> datetime:
     """ Takes the given date and converts it to the given timezone.
 
     The given date must already be timezone aware for this to work.
@@ -152,13 +152,13 @@ def to_timezone(date: datetime, timezone: 'TzInfoOrName') -> datetime:
 
 def utcnow() -> datetime:
     """ Returns a timezone-aware datetime.utcnow(). """
-    return replace_timezone(datetime.utcnow(), pytz.UTC)
+    return datetime.now(pytz.UTC)
 
 
 def is_whole_day(
     start: datetime,
     end: datetime,
-    timezone: 'TzInfoOrName'
+    timezone: TzInfoOrName
 ) -> bool:
     """Returns true if the given start, end range should be considered
     a whole-day range. This is so if the start time is 0:00:00 and the end
@@ -194,15 +194,15 @@ def is_whole_day(
 def overlaps(start: datetime, end: datetime,
              otherstart: datetime, otherend: datetime) -> bool: ...
 @overload  # noqa: E302
-def overlaps(start: 'Date', end: 'Date',
-             otherstart: 'Date', otherend: 'Date') -> bool: ...
+def overlaps(start: date_t, end: date_t,
+             otherstart: date_t, otherend: date_t) -> bool: ...
 
 
 def overlaps(
-    start: 'DateOrDatetime',
-    end: 'DateOrDatetime',
-    otherstart: 'DateOrDatetime',
-    otherend: 'DateOrDatetime'
+    start: DateOrDatetime,
+    end: DateOrDatetime,
+    otherstart: DateOrDatetime,
+    otherend: DateOrDatetime
 ) -> bool:
     """ Returns True if the given dates overlap in any way. """
 
@@ -216,17 +216,17 @@ def overlaps(
 
 
 @overload
-def count_overlaps(dates: Iterable[Tuple[datetime, datetime]],
+def count_overlaps(dates: Iterable[tuple[datetime, datetime]],
                    start: datetime, end: datetime) -> int: ...
 @overload  # noqa: E302
-def count_overlaps(dates: Iterable[Tuple['Date', 'Date']],
-                   start: 'Date', end: 'Date') -> int: ...
+def count_overlaps(dates: Iterable[tuple[date_t, date_t]],
+                   start: date_t, end: date_t) -> int: ...
 
 
 def count_overlaps(
-    dates: Iterable[Tuple['DateOrDatetime', 'DateOrDatetime']],
-    start: 'DateOrDatetime',
-    end: 'DateOrDatetime'
+    dates: Iterable[tuple[DateOrDatetime, DateOrDatetime]],
+    start: DateOrDatetime,
+    end: DateOrDatetime
 ) -> int:
     """ Goes through the list of start/end tuples in 'dates' and returns the
     number of times start/end overlaps with any of the dates.
@@ -243,8 +243,8 @@ def count_overlaps(
 
 def align_date_to_day(
     date: datetime,
-    timezone: 'TzInfoOrName',
-    direction: 'Direction'
+    timezone: TzInfoOrName,
+    direction: Direction
 ) -> datetime:
     """ Aligns the given date to the beginning or end of the day, depending on
     the direction. The beginning of the day only makes sense with a timezone
@@ -289,8 +289,8 @@ def align_date_to_day(
 
 def align_range_to_day(
     start: datetime,
-    end: datetime, timezone: 'TzInfoOrName'
-) -> Tuple[datetime, datetime]:
+    end: datetime, timezone: TzInfoOrName
+) -> tuple[datetime, datetime]:
     """ Takes the given start and end date and aligns it to the day depending
     on the given timezone.
 
@@ -306,7 +306,7 @@ def align_range_to_day(
 
 def align_date_to_week(
     date: datetime,
-    timezone: 'TzInfoOrName',
+    timezone: TzInfoOrName,
     direction: 'Direction'
 ) -> datetime:
     """ Like :func:`align_date_to_day`, but for weeks.
@@ -336,8 +336,8 @@ def align_date_to_week(
 def align_range_to_week(
     start: datetime,
     end: datetime,
-    timezone: 'TzInfoOrName'
-) -> Tuple[datetime, datetime]:
+    timezone: TzInfoOrName
+) -> tuple[datetime, datetime]:
 
     if start > end:
         raise ValueError(f'{start} - {end} is an invalid range')
@@ -350,8 +350,8 @@ def align_range_to_week(
 
 def align_date_to_month(
     date: datetime,
-    timezone: 'TzInfoOrName',
-    direction: 'Direction'
+    timezone: TzInfoOrName,
+    direction: Direction
 ) -> datetime:
     """ Like :func:`align_date_to_day`, but for months. """
 
@@ -386,8 +386,8 @@ def align_date_to_month(
 def align_range_to_month(
     start: datetime,
     end: datetime,
-    timezone: 'TzInfoOrName'
-) -> Tuple[datetime, datetime]:
+    timezone: TzInfoOrName
+) -> tuple[datetime, datetime]:
 
     if start > end:
         raise ValueError(f'{start} - {end} is an invalid range')
@@ -399,13 +399,13 @@ def align_range_to_month(
 
 
 def offset_date(
-    date: 'TDateOrDatetime',
+    date: DateOrDatetimeT,
     delta: timedelta,
     *,
     is_dst: bool = False,
     raise_non_existent: bool = False,
     raise_ambiguous: bool = False
-) -> 'TDateOrDatetime':
+) -> DateOrDatetimeT:
     """ For date and most datetimes it will be the same as adding the
     the date and delta naively, but for datetimes with a DstTzInfo it
     will make sure a DST <-> ST transition won't shift the time by an
@@ -438,7 +438,7 @@ def get_date_range(
     is_dst: bool = False,
     raise_non_existent: bool = False,
     raise_ambiguous: bool = False
-) -> Tuple[datetime, datetime]:
+) -> tuple[datetime, datetime]:
     """ Returns the date-range of a date, a start and an end time.
 
     For timezones with daylight savings this might return a range
@@ -509,12 +509,12 @@ def parse_time(timestring: str) -> time:
 
 
 def dtrange(
-    start: 'TDateOrDatetime',
-    end: 'DateOrDatetime',
+    start: DateOrDatetimeT,
+    end: DateOrDatetime,
     step: timedelta = timedelta(days=1),
     *,
     skip_missing: bool = False
-) -> Iterator['TDateOrDatetime']:
+) -> Iterator[DateOrDatetimeT]:
     """ Yields dates between start and end (inclusive) using the given step
     size. The step size may be negative iff end < start.
 
@@ -562,7 +562,7 @@ def dtrange(
         if step.total_seconds() > 0:
             step = timedelta(seconds=step.total_seconds() * -1)
 
-    def date_iter() -> Iterator['TDateOrDatetime']:
+    def date_iter() -> Iterator[DateOrDatetimeT]:
         # dates are immutable, so no copy is needed
         current = start
         while remaining(current, end):
@@ -585,14 +585,14 @@ def dtrange(
             pass
 
 
-def weeknumber(date: 'DateOrDatetime') -> int:
+def weeknumber(date: DateOrDatetime) -> int:
     return date.isocalendar()[1]
 
 
 def weekrange(
-    start: 'TDateOrDatetime',
-    end: 'TDateOrDatetime'
-) -> Iterator[Tuple['TDateOrDatetime', 'TDateOrDatetime']]:
+    start: DateOrDatetimeT,
+    end: DateOrDatetimeT
+) -> Iterator[tuple[DateOrDatetimeT, DateOrDatetimeT]]:
     """ Yields the weeks between start and end (inclusive).
 
     If start and end span less than a week, a single start/end pair is the
@@ -614,7 +614,7 @@ def weekrange(
         week_step = timedelta(days=7)
         aligned_start = start + timedelta(days=6 - start.weekday())
     else:
-        # here the start and end are backwards
+        # here the start and end are b`ackwards
         day_step = timedelta(days=-1)
         week_step = timedelta(days=-7)
         aligned_start = start - timedelta(days=start.weekday())
