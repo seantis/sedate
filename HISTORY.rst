@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+1.1.1 (2024-08-13)
+~~~~~~~~~~~~~~~~~~~
+
+- No changes. For testing new release workflow.
+  [Daverball]
+
 1.1.0 (2024-06-11)
 ~~~~~~~~~~~~~~~~~~~
 
