@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+1.2.0 (15.01.2025)
+~~~~~~~~~~~~~~~~~~~
+
 - Adds support for Python 3.13. Drops support for Python 3.8
   [Daverball]
 
