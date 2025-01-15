@@ -37,12 +37,12 @@ Run the Tests
 
 Install tox and run it::
 
-    pip install tox
+    pip install tox tox-uv
     tox
 
 Limit the tests to a specific python version::
 
-    tox -e py37
+    tox -e py311
 
 Conventions
 -----------
@@ -59,9 +59,9 @@ Development
 
 Setup your local development environment::
 
-    python3.8 -m venv venv
+    python3 -m venv venv
     source venv/bin/activate
-    pip install .[dev]
+    pip install -e .[dev]
     pre-commit install
 
 License

@@ -193,7 +193,7 @@ def is_whole_day(
 @overload
 def overlaps(start: datetime, end: datetime,
              otherstart: datetime, otherend: datetime) -> bool: ...
-@overload  # noqa: E302
+@overload
 def overlaps(start: date_t, end: date_t,
              otherstart: date_t, otherend: date_t) -> bool: ...
 
@@ -218,7 +218,7 @@ def overlaps(
 @overload
 def count_overlaps(dates: Iterable[tuple[datetime, datetime]],
                    start: datetime, end: datetime) -> int: ...
-@overload  # noqa: E302
+@overload
 def count_overlaps(dates: Iterable[tuple[date_t, date_t]],
                    start: date_t, end: date_t) -> int: ...
 
@@ -307,7 +307,7 @@ def align_range_to_day(
 def align_date_to_week(
     date: datetime,
     timezone: TzInfoOrName,
-    direction: 'Direction'
+    direction: Direction
 ) -> datetime:
     """ Like :func:`align_date_to_day`, but for weeks.
 
@@ -537,22 +537,24 @@ def dtrange(
     #       the absolute order of the datetimes. It would probably be
     #       easier/smarter to use dateutil at that point
     tzinfo = None
-    if isinstance(start, datetime):
-        if isinstance(start.tzinfo, pytz.tzinfo.DstTzInfo):
-            # we want the underspecified version that doesn't know yet
-            # whether
-            tzinfo = start.tzinfo
+    if (
+        isinstance(start, datetime)
+        and isinstance(start.tzinfo, pytz.tzinfo.DstTzInfo)
+    ):
+        # we need to remember the original timezone in case
+        # we need to convert the end timezone
+        tzinfo = start.tzinfo
 
-            # we convert to a tz-naive datetimes
-            start = start.replace(tzinfo=None)
-            if isinstance(end, datetime):
-                # before we convert the end to naive we need to make
-                # sure they're not in completely different timezones
-                assert isinstance(end.tzinfo, pytz.BaseTzInfo)
-                if end.tzinfo.zone != tzinfo.zone:
-                    end = to_timezone(end, tzinfo)
+        # we convert to a tz-naive datetime
+        start = start.replace(tzinfo=None)
+        if isinstance(end, datetime):
+            # before we convert the end to naive we need to make
+            # sure they're not in completely different timezones
+            assert isinstance(end.tzinfo, pytz.BaseTzInfo)
+            if end.tzinfo.zone != tzinfo.zone:
+                end = to_timezone(end, tzinfo)
 
-                end = end.replace(tzinfo=None)
+            end = end.replace(tzinfo=None)
 
     if start <= end:
         remaining = operator.le
