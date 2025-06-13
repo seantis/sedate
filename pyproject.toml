@@ -117,6 +117,7 @@ select = [
     "PERF",
     "PGH004",
     "PIE",
+    "PT",
     "PYI",
     "Q",
     "RUF",
@@ -173,6 +174,7 @@ allowed-confusables = ["×"]
 preview = true
 
 [tool.ruff.lint.extend-per-file-ignores]
+"sedate/**/*.py" = ["PT"]
 "tests/**/*.py" = [
     "C4",
     "D",
@@ -265,13 +267,14 @@ commands =
 basepython = python3.11
 deps =
     mypy
+    pytest
     types-pytz
 commands =
-    mypy -p sedate --python-version 3.9
-    mypy -p sedate --python-version 3.10
-    mypy -p sedate --python-version 3.11
-    mypy -p sedate --python-version 3.12
-    mypy -p sedate --python-version 3.13
+    mypy -p sedate -p tests --python-version 3.9
+    mypy -p sedate -p tests --python-version 3.10
+    mypy -p sedate -p tests --python-version 3.11
+    mypy -p sedate -p tests --python-version 3.12
+    mypy -p sedate -p tests --python-version 3.13
 
 [testenv:bandit]
 basepython = python3.11
