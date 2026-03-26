@@ -251,22 +251,6 @@ preview = true
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
 
-[tool.ruff.lint.pep8-naming]
-extend-ignore-names = [
-    "afterFlowable",
-    "HSTORE",
-    "sortKey",
-    "URL",
-    "UUID"
-]
-classmethod-decorators = [
-    # NOTE: We can potentially get rid some of these with SQLAlchemy 2.0
-    #       since they should cleanly combine with classmethod
-    "declared_attr",
-    "expression",
-    "comparator",
-]
-
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
 ignore-decorators = ["typing.overload"]
