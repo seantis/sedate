@@ -17,9 +17,9 @@ Sedate
     :target: https://codecov.io/gh/seantis/sedate
     :alt: Codecov.io
 
-.. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
-   :target: https://github.com/pre-commit/pre-commit
-   :alt: pre-commit
+.. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json
+   :target: https://github.com/j178/prek
+   :alt: prek
 
 Date/time helper functions used by various Seantis packages.
 
