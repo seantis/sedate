@@ -2,6 +2,59 @@
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "sedate"
+dynamic = ["version", "readme"]
+description = "Date/time helper functions used by various Seantis packages."
+requires-python = ">=3.10"
+authors = [
+    { name = "Seantis GmbH", email = "info@seantis.ch" },
+]
+license = "GPL-2.0-only"
+license-files = ["license/LICENSE.txt", "license/LICENSE.GPL"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = ["pytz"]
+
+[dependency-groups]
+dev = [
+    "bump-my-version",
+    "flake8",
+    "flake8-type-checking",
+    "flake8-pyproject",
+    "mypy",
+    "prek",
+    "pytest",
+    "ruff",
+    "tox",
+    "tox-uv",
+    "types-pytz",
+    "uv",
+]
+
+[project.urls]
+Repository = "http://github.com/seantis/sedate"
+"Bug Tracker" = "http://github.com/seantis/sedate/issues"
+Changelog = "https://github.com/seantis/sedate/blob/main/HISTORY.rst"
+
+[tool.setuptools.package-data]
+sedate = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = {attr = "sedate.__version__"}
+readme = {file = ["README.rst", "HISTORY.rst"]}
+
 [tool.bandit]
 skips = ["B101"]
 
@@ -17,6 +70,7 @@ norecursedirs = [
 
 [tool.coverage.run]
 branch = true
+source = ["src"]
 omit = ["*/types.py"]
 
 [tool.coverage.report]
@@ -36,7 +90,7 @@ tag = true
 tag_message = "Release {new_version}"
 
 [[tool.bumpversion.files]]
-filename = "sedate/__init__.py"
+filename = "src/sedate/__init__.py"
 search= "__version__ = '{current_version}'"
 replace= "__version__ = '{new_version}'"
 
@@ -53,10 +107,13 @@ replace = """
 """
 
 [tool.mypy]
-python_version = 3.9
+python_version = "3.10"
 strict = true
 warn_unreachable = true
-mypy_path = "$MYPY_CONFIG_FILE_DIR"
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
+
+[tool.flake8]
+select = ["TC0", "TC1"]
 
 [tool.ruff]
 exclude = [
@@ -90,13 +147,12 @@ exclude = [
 src = ["src", "tests"]
 include = [
     "pyproject.toml",
-    "sedate/**/*.py",
+    "src/**/*.py",
     "tests/**/*.py",
-    "stubs/**/*.pyi"
 ]
 line-length = 79
 indent-width = 4
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [
@@ -166,7 +222,7 @@ ignore = [
     "UP009",
     "UP012",
     "UP032",
-    "UP038",
+    "RUF067",
 ]
 unfixable = []
 external = ["TC"]
@@ -230,63 +286,82 @@ docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
 [tool.tox]
-legacy_tox_ini = """
-[tox]
-isolated_build = True
-envlist = py39,py310,py311,py312,py313,lint,bandit,mypy
+isolated_build = true
+env_list = [
+    "py310",
+    "py311",
+    "py312",
+    "py313",
+    "py314",
+    "lint",
+    "bandit",
+    "mypy",
+    "report",
+]
 
-[gh-actions]
-python =
-    3.9: py39
-    3.10: py310
-    3.11: py311,lint,bandit,mypy
-    3.12: py312
-    3.13: py313
+[tool.tox.gh.python]
+"3.10" = ["py310"]
+"3.11" = ["py311"]
+"3.12" = ["py312", "ruff", "bandit", "mypy"]
+"3.13" = ["py313"]
+"3.14" = ["py314"]
 
-[testenv]
-setenv =
-    py{39,310,311,312,313}: COVERAGE_FILE = .coverage.{envname}
-deps =
-    coverage[toml]
-    pytest
-    pytest-cov
-    pytest-codecov[git]
-commands = py.test --cov={envsitepackagesdir}/sedate --cov-report= {posargs}
+[tool.tox.env_run_base]
+use_develop = true
+set_env.COVERAGE_FILE = { replace = "if", condition = "not factor.report", then = ".coverage.{env_name}"}
+deps = [
+    "coverage[toml]",
+    "pytest",
+    "pytest-cov",
+    "pytest-codecov[git]",
+]
+commands = [
+    [
+        "pytest",
+        "--cov",
+        "--cov-report=",
+        { replace = "posargs", extend = true }
+    ],
+]
 
-[testenv:lint]
-basepython = python3.11
-deps =
-    flake8
-    flake8-type-checking
-    ruff
-commands =
-    ruff check
-    flake8 sedate/ tests/
+[tool.tox.env.lint]
+base_python = "python3.12"
+deps = [
+    "flake8",
+    "flake8-pyproject",
+    "flake8-type-checking",
+    "ruff",
+]
+commands = [
+    ["ruff", "check"],
+    ["flake8", "src/", "tests/"]
+]
 
-[testenv:mypy]
-basepython = python3.11
-deps =
-    mypy
-    pytest
-    types-pytz
-commands =
-    mypy -p sedate -p tests --python-version 3.9
-    mypy -p sedate -p tests --python-version 3.10
-    mypy -p sedate -p tests --python-version 3.11
-    mypy -p sedate -p tests --python-version 3.12
-    mypy -p sedate -p tests --python-version 3.13
+[tool.tox.env.mypy]
+base_python = "python3.12"
+deps = [
+    "mypy",
+    "pytest",
+    "types-pytz",
+]
+commands = [
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.10"],
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.11"],
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.12"],
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.13"],
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.14"],
+]
 
-[testenv:bandit]
-basepython = python3.11
-deps =
-    bandit[toml]
-commands = bandit -q -c pyproject.toml -r sedate/
+[tool.tox.env.bandit]
+base_python = "python3.12"
+deps = ["bandit[toml"]
+commands = [["bandit", "-q", "-c", "pyproject.toml", "-r", "src"]]
 
-[testenv:report]
-deps =
-    coverage[toml]
+[tool.tox.env.report]
+base_python = "python3.12"
 skip_install = true
-commands =
-    coverage combine
-    coverage report -m
-"""
+deps = ["coverage"]
+commands = [
+    ["coverage", "combine"],
+    ["coverage", "report", "-m"],
+]

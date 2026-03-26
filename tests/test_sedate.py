@@ -4,7 +4,8 @@ import pytest
 import sedate
 import pytz
 
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
+from math import isclose
 
 
 from typing import Any
@@ -25,10 +26,14 @@ def test_ensure_timezone() -> None:
 
 
 def test_utcnow() -> None:
-
-    assert sedate.utcnow().replace(
-        tzinfo=None, microsecond=0, second=0, minute=0
-    ) == datetime.utcnow().replace(microsecond=0, second=0, minute=0)
+    assert isclose(
+        sedate.utcnow().timestamp(),
+        datetime.now(timezone.utc).timestamp(),
+        # NOTE: 1 second is very generous, but good enough to ensure
+        #       that the tzoffset is correct, since the smallest valid
+        #       offsets are on the order of magnitude of minutes.
+        abs_tol=1.0
+    )
 
     assert sedate.utcnow().tzinfo == UTC
 
