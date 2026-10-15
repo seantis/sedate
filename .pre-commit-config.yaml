@@ -19,13 +19,13 @@ repos:
       - id: nocheckin
         exclude: .pre-commit-config.yaml
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.7
+    rev: v0.17.0
     hooks:
       - id: ruff-check
         files: '^(src|tests)/.*\.py$'
         args: [ "--fix" ]
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.3.0
+    rev: 7.4.1
     hooks:
       - id: flake8
         additional_dependencies:
@@ -33,7 +33,7 @@ repos:
           - flake8-type-checking
         files: '^(src|tests)/.*\.py$'
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.1
+    rev: v2.4.0
     hooks:
       - id: mypy
         files: '^(src|tests)/.*\.py$'
@@ -41,6 +41,6 @@ repos:
           - pytest
           - types-pytz
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.28.0
+    rev: v1.31.0
     hooks:
       - id: zizmor

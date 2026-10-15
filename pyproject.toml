@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "sedate"
 dynamic = ["version", "readme"]
 description = "Date/time helper functions used by various Seantis packages."
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
     { name = "Seantis GmbH", email = "info@seantis.ch" },
 ]
@@ -16,11 +16,11 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: Implementation :: CPython",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -107,7 +107,7 @@ replace = """
 """
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = true
 warn_unreachable = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
@@ -152,26 +152,19 @@ include = [
 ]
 line-length = 79
 indent-width = 4
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
     "B0",
-    "B904",
-    "B909",
     "C4",
-    "COM818",
     "D2",
-    "D301",
     "D4",
     "E",
     "F",
-    "FLY002",
-    "I002",
     "ISC",
     "N",
     "PERF",
-    "PGH004",
     "PIE",
     "PT",
     "PYI",
@@ -180,49 +173,56 @@ select = [
     "SIM",
     "SLOT",
     "UP",
-    "W"
+    "W",
+    "blanket-noqa",
+    "escape-sequence-in-docstring",
+    "loop-iterator-mutation",
+    "missing-required-import",
+    "raise-without-from-inside-except",
+    "static-join-to-f-string",
+    "trailing-comma-on-bare-tuple",
 ]
 ignore = [
-    "B007",
-    "C420",
-    "D200",
-    "D201",
-    "D202",
-    "D204",
-    "D205",
-    "D209",
-    "D210",
-    "D211",
-    "D400",
-    "D401",
-    "D412",
-    "E226",
-    "E402",
-    "E711",
-    "E712",
-    "E741",
-    "N818",
-    "PYI019",
-    "PYI041",
-    "RUF012",
-    "RUF013",
-    "RUF021",
-    "RUF022",
-    "RUF023",
-    "RUF031",
-    "RUF052",
-    "RUF056",
-    "SIM103",
-    "SIM105",
-    "SIM108",
-    "SIM110",
-    "SIM118",
-    "SIM210",
-    "SIM910",
-    "UP009",
-    "UP012",
-    "UP032",
-    "RUF067",
+    "ambiguous-variable-name",
+    "blank-line-after-function",
+    "blank-line-before-class",
+    "blank-line-before-function",
+    "blank-lines-between-header-and-content",
+    "custom-type-var-for-self",
+    "dict-get-with-none-default",
+    "error-suffix-on-exception-name",
+    "f-string",
+    "falsy-dict-get-fallback",
+    "if-else-block-instead-of-if-exp",
+    "if-expr-with-true-false",
+    "implicit-optional",
+    "in-dict-keys",
+    "incorrect-blank-line-after-class",
+    "incorrectly-parenthesized-tuple-in-subscript",
+    "missing-blank-line-after-summary",
+    "missing-trailing-period",
+    "missing-whitespace-around-arithmetic-operator",
+    "module-import-not-at-top-of-file",
+    "mutable-class-default",
+    "needless-bool",
+    "new-line-after-last-paragraph",
+    "non-empty-init-module",
+    "non-imperative-mood",
+    "none-comparison",
+    "parenthesize-chained-operators",
+    "reimplemented-builtin",
+    "redundant-numeric-union",
+    "suppressible-exception",
+    "surrounding-whitespace",
+    "true-false-comparison",
+    "unnecessary-dict-comprehension-for-iterable",
+    "unnecessary-encode-utf8",
+    "unnecessary-multiline-docstring",
+    "unsorted-dunder-all",
+    "unsorted-dunder-slots",
+    "unused-loop-control-variable",
+    "used-dummy-variable",
+    "utf8-encoding-declaration",
 ]
 unfixable = []
 external = ["TC"]
@@ -234,8 +234,6 @@ preview = true
 "tests/**/*.py" = [
     "C4",
     "D",
-    "FLY002",
-    "I002",
     "ISC",
     "N",
     "Q",
@@ -246,6 +244,8 @@ preview = true
     "RUF",
     "SIM",
     "UP",
+    "missing-required-import",
+    "static-join-to-f-string",
 ]
 
 [tool.ruff.lint.isort]
@@ -272,11 +272,11 @@ docstring-code-line-length = "dynamic"
 [tool.tox]
 isolated_build = true
 env_list = [
-    "py310",
     "py311",
     "py312",
     "py313",
     "py314",
+    "py315",
     "lint",
     "bandit",
     "mypy",
@@ -284,11 +284,11 @@ env_list = [
 ]
 
 [tool.tox.gh.python]
-"3.10" = ["py310"]
 "3.11" = ["py311"]
 "3.12" = ["py312", "ruff", "bandit", "mypy"]
 "3.13" = ["py313"]
 "3.14" = ["py314"]
+"3.15" = ["py315"]
 
 [tool.tox.env_run_base]
 use_develop = true
@@ -329,11 +329,11 @@ deps = [
     "types-pytz",
 ]
 commands = [
-    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.10"],
     ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.11"],
     ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.12"],
     ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.13"],
     ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.14"],
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.15"],
 ]
 
 [tool.tox.env.bandit]

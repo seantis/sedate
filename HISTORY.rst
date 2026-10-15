@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+- Adds support for Python 3.15. Drops support for Python 3.10
+  [Daverball]
+
 1.3.0 (26.03.2026)
 ~~~~~~~~~~~~~~~~~~~
 
